@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Arabesque Kitchen Orders with Control Panel & History</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 0;
+      background-image: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1470&q=80');
+      background-size: cover;
+      background-position: center;
+      color: #333;
+      min-height: 100vh;
+      position: relative;
+      padding-bottom: 50px;
+    }
+    .overlay {
+      background: transparent;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+    .section {
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 42px;
+      color: #b2302d;
+      font-weight: bold;
+      margin: 0;
+    }
+    .lang-switch {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #b2302d;
+      color: white;
+      border: none;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 20;
+    }
+    .control-btn {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background-color: #277a1f;
+      color: white;
+      border: none;
+      width: 120px; height: 40px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 20;
+    }
+    .report-btn {
+      position: fixed;
+      top: 110px;
+      right: 10px;
+      background-color: #0a66c2;
+      color: white;
+      border: none;
+      width: 120px; height: 40px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 20;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .section h2 {
+      color: #b2302d;
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    select, input, textarea {
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      background-color: rgba(255,255,255,0.95);
+      resize: vertical;
+    }
+    input[type="number"] { max-width: 120px; }
+    .btn-row {
+      margin-top: 15px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #b2302d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #d04d4a;
+    }
+    .order-list {
+      margin-top: 10px;
+      background-color: rgba(255,255,255,0.9);
+      padding: 10px;
+      border-radius: 6px;
+      min-height: 40px;
+      white-space: pre-line;
+      font-family: monospace;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+    }
+    .edit-area {
+      display: none;
+      margin-top: 10px;
+    }
+    .edit-area textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-family: monospace;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #controlPanel {
+      position: fixed;
+      top: 150px;
+      right: 10px;
+      width: 320px;
+      max-height: 80vh;
+      background-color: rgba(255,255,255,0.95);
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      overflow-y: auto;
+      z-index: 25;
+      display: none;
+    }
+    #controlPanel h2 {
+      margin-top: 0;
+      color: #277a1f;
+      text-align: center;
+    }
+    #controlPanel label {
+      font-weight: bold;
+    }
+    #controlPanel select {
+      margin-bottom: 15px;
+    }
+    .control-list {
+      max-height: 180px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: white;
+      margin-bottom: 10px;
+    }
+    .control-list div {
+      padding: 6px 10px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .control-list div:last-child {
+      border-bottom: none;
+    }
+    .control-list div:hover {
+      background-color: #f0f0f0;
+      cursor: pointer;
+    }
+    .control-list button {
+      background-color: #b2302d;
+      margin-left: 10px;
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+    .control-inputs input[type="text"] {
+      margin-bottom: 10px;
+    }
+    /* تم حذف #reportPanel بالكامل */
+    footer {
+      text-align: center; 
+      padding: 10px; 
+      background: #f0f0f0; 
+      color: #555; 
+      font-size: 14px; 
+      position: fixed; 
+      bottom: 0; 
+      width: 100%; 
+      z-index: 30;
+    }
+  </style>
+</head>
+<body>
+  <button class="lang-switch" onclick="toggleLanguage()">AR</button>
+  <button class="control-btn" onclick="toggleControlPanel()">Control Panel</button>
+  <!-- زر التقرير تم تغييره ليفتح صفحة جديدة -->
+  <button class="report-btn" onclick="window.open('report.html', '_blank')">Monthly Report</button>
+
+  <div class="overlay">
+    <header>
+      <h1 id="pageTitle">Arabesque Kitchen Orders</h1>
+    </header>
+    <div class="container" id="sectionsContainer"></div>
+  </div>
+
+  <div id="controlPanel">
+    <h2 id="controlTitle">Control Panel</h2>
+    <label for="controlSectionSelect">Select Section / اختر القسم:</label>
+    <select id="controlSectionSelect" onchange="loadControlList()"></select>
+
+    <div class="control-list" id="controlItemsList"></div>
+
+    <div class="control-inputs">
+      <label for="controlNewItemName">New / Edit Item Name:</label>
+      <input type="text" id="controlNewItemName" placeholder="Type item name..." />
+      <div style="display:flex; justify-content: flex-end;">
+        <button onclick="addOrUpdateItem()">Add / Update</button>
+        <button onclick="deleteSelectedItem()" style="background-color:#777; margin-left: 10px;">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    جميع الحقوق محفوظة لـ Kareem Lotfy © 2025
+  </footer>
+
+<script>
+  let currentLang = 'en';
+
+  const lineLinks = {
+    vegetables: 'https://line.me/R/ti/g/q9stqLnWvv',
+    chicken: 'https://line.me/R/ti/g/6U-6VMyXZt'
+  };
+
+  const defaultSectionsData = {
+    vegetables: {
+      en: "Vegetables", ar: "خضار",
+      items: [
+        ["White Onion","بصل أبيض"],["Red Onion","بصل أحمر"],["Potato","بطاطس"],["Garlic","توم"],
+        ["Fresh Ginger","جنزبيل فرش"],["Small Chili Pepper","فلفل شطة صغير"],["Large Chili Pepper","فلفل شطة كبير"],
+        ["Bell Pepper","فلفل ألوان"],["Carrot","جزر"],["Celery","كرافس"],["Leek","كرات"],["Dill","شبت"],
+        ["Black Eggplant","بتنجان أسود"],["Stuffed Eggplant","بتنجان محشي"],["Tomato","طماطم"],["Cherry Tomato","طماطم شيري"],
+        ["White Cabbage","ملفوف أبيض"],["Red Cabbage","ملفوف أحمر"],["Eggs","بيض"],["Tamarind","تمر هندي"],
+        ["Parsley","بقدونس"],["Lettuce","خص"],["Fresh Coriander","كزبرة خضرا"],["Mint","نعناع"],
+        ["Lemon","ليمون"],["Cucumber","خيار"]
+      ]
+    },
+    hsm: {
+      en: "HSM Company", ar: "شركة HSM",
+      items: [
+        ["Fava Beans","فول"],["Feta Cheese","جبنة فيتا"],["Grape Leaves","ورق عنب"],["Okra","بامية"],
+        ["Olives","زيتون"],["Thyme","زعتر"],["Tomato Paste","صلصة طماطم"],["Pomegranate Molasses","دبس رمان"],
+        ["Red Pepper Paste","دبس فليفلة"],["Tahini","طحينة"],["Bulgur","برغل"],["Red Lentils","عدس أحمر"],
+        ["Yellow Lentils","عدس أصفر"],["Peeled Fava Beans","فول مدشوش"],["Basmati Rice","أرز بسمتي"],
+        ["Black Pepper","فلفل أسمر"],["White Pepper","فلفل أبيض"],["Cumin","كمون"],["Coriander","كزبرة"],
+        ["Seven Spices","سبع بهارات"],["Chicken Spices","بهارات دجاج"],["Cinnamon Sticks","قرفة عيدان"],
+        ["Sesame","سمسم"],["Animal Ghee","سمنة حيواني"],["Olive Oil","زيت زيتون"],["Zucchini","كوسا"],
+        ["Halloumi Cheese","جبنة حلومي"],["Kraft Cheese","جبنة كرافت"],["Labneh","لبنة"],["Maggi Powder","ماجي بودر"],
+        ["Demi-Glace","ديمي جلاس"],["Grilled Eggplant","باتنجان مشوي"],["Vermicelli","شعرية"],["Chickpeas","حمص"],
+        ["Pickled Olives","مخلل زيتون"],["Pickled Cucumber","مخلل خيار"],["Pickled Turnip","مخلل لفت"],
+        ["Penne Pasta","معكرونة بنة"],["Spaghetti Pasta","معكرونة اسباجيتي"],["Macaroni","معكرونة قلم"]
+      ]
+    },
+    makro: {
+      en: "Makro", ar: "ماكرو",
+      items: [
+        ["Frying Oil","زيت قلي"],["Chickpea Oil","زيت حمص"],["Egyptian Rice","رز مصري"],
+        ["Staff Rice","رز اسطاف"],["Mustard","مستردة"],["Spinach","سبانخ"],["Fish Fillet","سمك فيليه"],
+        ["Calamari","كاليماري"],["Lemon Juice","عصير ليمون"],["Starch","نشا"],["Salt","ملح"],
+        ["Om Ali Milk","حليب أم علي"],["Milk","حليب"],["Yogurt","زبادي"],["Kunafa Cheese","جبنة كنافة"],
+        ["Liver","كبدة"],["Breadcrumbs","بقسماط"],["Carbonate","كربونات"],["Burger Bread","خبز برجر"],
+        ["Burger Cheese","جبنة برجر"],["Peas","بسلة"],["Vinegar","خل"],["Sweet Corn","ذرة حلوة"],
+        ["Ghee for Feteer","سمن فطير"],["Feteer Flour","دقيق فطير"],["Ketchup","كاتشب"],["Honey","عسل"],
+        ["Grated Almonds","لوز مبشور"]
+      ]
+    },
+    chicken: {
+      en: "Chicken", ar: "دجاج",
+      items: [
+        ["Whole Chicken","دجاج كامل"],["Chicken Fillet","دجاج فيليلة"],
+        ["Chicken Breast","دجاج صدور"],["Chicken Legs","دجاج أرجل"],["Chicken Wings","جوانح دجاج"]
+      ]
+    },
+    meat: {
+      en: "Meat", ar: "لحوم",
+      items: []
+    }
+  };
+
+  let sectionsData = JSON.parse(localStorage.getItem('sectionsData')) || defaultSectionsData;
+  const orders = { vegetables: [], hsm: [], makro: [], chicken: [], meat: [] };
+
+  // سجل الطلبات مع التاريخ
+  function saveOrderHistory(section, orderText) {
+    const allHistory = JSON.parse(localStorage.getItem('ordersHistory')) || [];
+    const now = new Date();
+    const orderEntry = {
+      section,
+      orderText,
+      datetime: now.toISOString(),
+      datetimeReadable: now.toLocaleString(currentLang === 'en' ? 'en-US' : 'ar-EG'),
+      sectionName: sectionsData[section][currentLang]
+    };
+    allHistory.push(orderEntry);
+    localStorage.setItem('ordersHistory', JSON.stringify(allHistory));
+  }
+
+  function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ar' : 'en';
+    document.querySelector('.lang-switch').textContent = currentLang === 'en' ? 'AR' : 'EN';
+    document.getElementById('pageTitle').textContent = currentLang === 'en' ? 'Arabesque Kitchen Orders' : 'طلبات مطبخ أرابيسك';
+    renderSections(true);
+    populateControlSections();
+  }
+
+  function renderSections(reset = false) {
+    const container = document.getElementById('sectionsContainer');
+    if (reset) container.innerHTML = '';
+    Object.entries(sectionsData).forEach(([key, sec]) => {
+      if (reset) {
+        const div = document.createElement('div');
+        div.className = 'section';
+        div.id = key + 'Section';
+        div.innerHTML = `
+          <h2>${sec[currentLang]}</h2>
+          <label>${currentLang==='en'?'Select item':'اختر صنف'}:</label>
+          <select id="${key}Select"></select>
+          <label>${currentLang==='en'?'Quantity':'الكمية'}:</label>
+          <input type="number" id="${key}Qty" min="1" value="1" />
+          <label>${currentLang==='en'?'Notes':'ملاحظات'}:</label>
+          <input type="text" id="${key}Notes" placeholder="..." />
+          <hr/>
+          <div class="btn-row">
+            <button onclick="addOrder('${key}')">${currentLang==='en'?'Add to Order':'أضف للطلب'}</button>
+          </div>
+          <pre class="order-list" id="${key}Order"></pre>
+          <div class="btn-row">
+            <button onclick="editOrder('${key}')">${currentLang==='en'?'Edit Order':'تعديل الطلب'}</button>
+            <button onclick="sendOrder('${key}')">${currentLang==='en'?'Send Order':'إرسال الطلب'}</button>
+            <button onclick="openLineApp('${key}')">LINE</button>
+            <button onclick="openWhatsApp('${key}')">WhatsApp</button>
+            <button onclick="copyOrder('${key}')">${currentLang==='en'?'Copy Order':'نسخ الطلب'}</button>
+          </div>
+          <div class="edit-area" id="${key}EditArea">
+            <textarea id="${key}EditText"></textarea>
+            <button onclick="saveEditedOrder('${key}')">${currentLang==='en'?'Save':'حفظ'}</button>
+            <button onclick="cancelEditOrder('${key}')">${currentLang==='en'?'Cancel':'إلغاء'}</button>
+          </div>
+        `;
+        container.appendChild(div);
+      }
+      const select = document.getElementById(key + 'Select');
+      if (!select) return;
+      select.innerHTML = '';
+      sec.items.forEach(pair => {
+        const option = document.createElement('option');
+        option.value = pair[0];
+        option.textContent = currentLang === 'en' ? pair[0] : pair[1];
+        select.appendChild(option);
+      });
+      document.getElementById(key + 'Qty').value = 1;
+      document.getElementById(key + 'Notes').value = '';
+      document.getElementById(key + 'Order').textContent = orders[key].join('\n');
+      document.getElementById(key + 'EditArea').style.display = 'none';
+    });
+  }
+
+  function addOrder(section) {
+    const select = document.getElementById(section + 'Select');
+    const qty = document.getElementById(section + 'Qty');
+    const notes = document.getElementById(section + 'Notes');
+
+    if (!select.value) return alert(currentLang === 'en' ? 'Please select an item.' : 'يرجى اختيار صنف.');
+
+    let orderLine = `${qty.value} x ${select.value}`;
+    if (notes.value.trim()) {
+      orderLine += ` (${notes.value.trim()})`;
+    }
+    orders[section].push(orderLine);
+    document.getElementById(section + 'Order').textContent = orders[section].join('\n');
+
+    // Reset qty and notes
+    qty.value = 1;
+    notes.value = '';
+  }
+
+  function editOrder(section) {
+    const editArea = document.getElementById(section + 'EditArea');
+    const editText = document.getElementById(section + 'EditText');
+    editText.value = orders[section].join('\n');
+    editArea.style.display = 'block';
+  }
+
+  function saveEditedOrder(section) {
+    const editArea = document.getElementById(section + 'EditArea');
+    const editText = document.getElementById(section + 'EditText');
+    orders[section] = editText.value.trim().split('\n').filter(line => line.trim() !== '');
+    document.getElementById(section + 'Order').textContent = orders[section].join('\n');
+    editArea.style.display = 'none';
+  }
+
+  function cancelEditOrder(section) {
+    const editArea = document.getElementById(section + 'EditArea');
+    editArea.style.display = 'none';
+  }
+
+  // ** تعديل هنا: دالة إرسال الطلب فقط تحفظ الطلب في التقارير، ولا تفتح واتساب أو لاين **
+  function sendOrder(section) {
+    if (orders[section].length === 0) {
+      alert(currentLang === 'en' ? 'No items in order to send.' : 'لا يوجد أصناف لإرسالها.');
+      return;
+    }
+
+    const orderText = orders[section].join('\n');
+    saveOrderHistory(section, orderText);
+
+    alert(currentLang === 'en' ? 'Order saved to reports successfully.' : 'تم حفظ الطلب في التقارير بنجاح.');
+
+    // ممكن تمسح الطلب لو حبيت بعد الحفظ
+    // orders[section] = [];
+    // document.getElementById(section + 'Order').textContent = '';
+  }
+
+  // فتح لينك LINE حسب القسم
+  function openWhatsApp(section) {
+  if (orders[section].length === 0) {
+    alert(currentLang === 'en' ? 'No items in order to send.' : 'لا يوجد أصناف لإرسالها.');
+    return;
+  }
+  const orderText = encodeURIComponent(orders[section].join('\n'));
+  const phone = '66620686212'; // رقم الواتساب بدون +
+  const waLink = `https://wa.me/${phone}?text=${orderText}`;
+  window.open(waLink, '_blank');
+}
+
+
+  function copyOrder(section) {
+    if (orders[section].length === 0) {
+      alert(currentLang === 'en' ? 'No items to copy.' : 'لا يوجد أصناف للنسخ.');
+      return;
+    }
+    navigator.clipboard.writeText(orders[section].join('\n')).then(() => {
+      alert(currentLang === 'en' ? 'Order copied to clipboard.' : 'تم نسخ الطلب.');
+    });
+  }
+
+  // --- لوحة التحكم ---
+
+  function toggleControlPanel() {
+    const panel = document.getElementById('controlPanel');
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    if (panel.style.display === 'block') {
+      populateControlSections();
+      loadControlList();
+    }
+  }
+
+  function populateControlSections() {
+    const select = document.getElementById('controlSectionSelect');
+    select.innerHTML = '';
+    Object.entries(sectionsData).forEach(([key, sec]) => {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = sec[currentLang];
+      select.appendChild(option);
+    });
+  }
+
+  function loadControlList() {
+    const select = document.getElementById('controlSectionSelect');
+    const listDiv = document.getElementById('controlItemsList');
+    listDiv.innerHTML = '';
+    const secKey = select.value;
+    if (!secKey) return;
+    sectionsData[secKey].items.forEach((pair, idx) => {
+      const div = document.createElement('div');
+      div.textContent = currentLang === 'en' ? pair[0] : pair[1];
+      div.onclick = () => {
+        document.getElementById('controlNewItemName').value = currentLang === 'en' ? pair[0] : pair[1];
+        listDiv.querySelectorAll('div').forEach(d => d.style.background = '');
+        div.style.background = '#d0e7d8';
+        div.dataset.index = idx;
+        div.dataset.key = secKey;
+      };
+      listDiv.appendChild(div);
+    });
+  }
+
+  function addOrUpdateItem() {
+    const sectionSelect = document.getElementById('controlSectionSelect');
+    const secKey = sectionSelect.value;
+    if (!secKey) return alert(currentLang === 'en' ? 'Select a section first.' : 'اختر القسم أولاً.');
+
+    const newName = document.getElementById('controlNewItemName').value.trim();
+    if (!newName) return alert(currentLang === 'en' ? 'Item name cannot be empty.' : 'اسم الصنف لا يمكن أن يكون فارغ.');
+
+    const listDiv = document.getElementById('controlItemsList');
+    const selectedDiv = Array.from(listDiv.children).find(d => d.style.background);
+
+    if (selectedDiv) {
+      // تحديث
+      const idx = parseInt(selectedDiv.dataset.index);
+      if (currentLang === 'en') {
+        sectionsData[secKey].items[idx][0] = newName;
+      } else {
+        sectionsData[secKey].items[idx][1] = newName;
+      }
+    } else {
+      // إضافة جديد
+      if (currentLang === 'en') {
+        sectionsData[secKey].items.push([newName, '']);
+      } else {
+        sectionsData[secKey].items.push(['', newName]);
+      }
+    }
+    localStorage.setItem('sectionsData', JSON.stringify(sectionsData));
+    loadControlList();
+    renderSections(true);
+  }
+
+  function deleteSelectedItem() {
+    const listDiv = document.getElementById('controlItemsList');
+    const selectedDiv = Array.from(listDiv.children).find(d => d.style.background);
+    if (!selectedDiv) return alert(currentLang === 'en' ? 'Select an item to delete.' : 'اختر صنف للحذف.');
+
+    const secKey = selectedDiv.dataset.key;
+    const idx = parseInt(selectedDiv.dataset.index);
+    if (!secKey || idx === undefined) return;
+
+    if (!confirm(currentLang === 'en' ? 'Delete this item?' : 'هل تريد حذف هذا الصنف؟')) return;
+
+    sectionsData[secKey].items.splice(idx, 1);
+    localStorage.setItem('sectionsData', JSON.stringify(sectionsData));
+    loadControlList();
+    renderSections(true);
+  }
+
+  // تحميل الواجهة أول مرة
+  window.onload = () => {
+    renderSections(true);
+    populateControlSections();
+  };
+</script>
+</body>
+</html>
